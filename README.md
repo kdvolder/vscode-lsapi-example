@@ -14,9 +14,28 @@ to create a working Language Server. In this
 exercise we strip it down to the bare minimum
 to make a very basic language server similar to
 the one built in the 
-[VScode tutorial on building a language server](https://code.visualstudio.com/docs/extensions/example-language-server). 
+[VScode tutorial on building a language server](https://code.visualstudio.com/docs/extensions/example-language-server).
 
-# Oringal README
+# Running
+
+The extension implemented in this example consists out of two pieces:
+ 
+  - client: a typescript js app that launches and connects to the language server.
+  - server: Java server app.
+  
+First build the server:
+
+    mvn clean package
+
+The server will be produced in `out/fat-jar.jar`.
+
+Now you can open the client-app in vscode. From the root of this project.
+
+    code .
+
+To launch the language server in a vscode runtime, press F5.
+
+# Original README
 
 The contents of the original readme of the cloned repo is below. 
 Should probably be edited / removed. Keeping it for now in case
