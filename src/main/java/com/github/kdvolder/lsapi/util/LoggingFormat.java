@@ -1,4 +1,4 @@
-package org.javacs;
+package com.github.kdvolder.lsapi.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;

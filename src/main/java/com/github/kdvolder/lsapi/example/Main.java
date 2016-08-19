@@ -1,53 +1,25 @@
-package org.javacs;
+package com.github.kdvolder.lsapi.example;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
-import io.typefox.lsapi.services.json.LanguageServerToJsonAdapter;
-import java.util.concurrent.ExecutionException;
-
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.github.kdvolder.lsapi.util.LoggingFormat;
+
+import io.typefox.lsapi.services.json.LanguageServerToJsonAdapter;
+import io.typefox.lsapi.services.json.LoggingJsonAdapter;
+
 public class Main {
     private static final Logger LOG = Logger.getLogger("main");
-    public static final ObjectMapper JSON = new ObjectMapper().registerModule(new Jdk8Module())
-                                                              .registerModule(new JSR310Module())
-                                                              .registerModule(pathAsJson())
-                                                              .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-
-    private static SimpleModule pathAsJson() {
-        SimpleModule m = new SimpleModule();
-
-        m.addSerializer(Path.class, new JsonSerializer<Path>() {
-            @Override
-            public void serialize(Path path,
-                                  JsonGenerator gen,
-                                  SerializerProvider serializerProvider) throws IOException, JsonProcessingException {
-                gen.writeString(path.toString());
-            }
-        });
-
-        m.addDeserializer(Path.class, new JsonDeserializer<Path>() {
-            @Override
-            public Path deserialize(JsonParser parse,
-                                    DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
-                return Paths.get(parse.getText());
-            }
-        });
-
-        return m;
-    }
 
     public static void main(String[] args) throws IOException {
+    	LOG.info("Starting LS");
         try {
             LoggingFormat.startLogging();
 
@@ -62,7 +34,7 @@ public class Main {
     }
 
     private static Connection connectToNode() throws IOException {
-        String port = System.getProperty("javacs.port");
+        String port = System.getProperty("server.port");
 
         if (port != null) {
             Socket socket = new Socket("localhost", Integer.parseInt(port));
@@ -108,8 +80,9 @@ public class Main {
      * When the request stream is closed, wait for 5s for all outstanding responses to compute, then return.
      */
     public static void run(Connection connection) {
-        JavaLanguageServer server = new JavaLanguageServer();
-        LanguageServerToJsonAdapter jsonServer = new LanguageServerToJsonAdapter(server);
+    	MyLanguageServer server = new MyLanguageServer();
+    	LoggingJsonAdapter jsonServer = new LoggingJsonAdapter(server);
+    	jsonServer.setMessageLog(new PrintWriter(System.out));
 
         jsonServer.connect(connection.in, connection.out);
         jsonServer.getProtocol().addErrorListener((message, err) -> {

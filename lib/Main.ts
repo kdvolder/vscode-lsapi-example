@@ -31,15 +31,13 @@ export function activate(context: VSCode.ExtensionContext) {
         // Options to control the language client
         let clientOptions: LanguageClientOptions = {
             // Register the server for java documents
-            documentSelector: ['java'],
+            documentSelector: ['plaintext'],
             synchronize: {
-                // Synchronize the setting section 'java' to the server
-                // NOTE: this currently doesn't do anything
-                configurationSection: 'java',
+                // Synchronize the setting section to the server:
+                configurationSection: 'languageServerExample',
                 // Notify the server about file changes to 'javaconfig.json' files contain in the workspace
                 fileEvents: [
-                    VSCode.workspace.createFileSystemWatcher('**/javaconfig.json'),
-                    VSCode.workspace.createFileSystemWatcher('**/*.java')
+                    VSCode.workspace.createFileSystemWatcher('**/.clientrc')
                 ]
             }
         }
@@ -50,9 +48,10 @@ export function activate(context: VSCode.ExtensionContext) {
                     let fatJar = Path.resolve(context.extensionPath, "out", "fat-jar.jar");
                     
                     let args = [
+                        '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n',
+                        '-Dserver.port=' + port,
                         '-cp', fatJar, 
-                        '-Djavacs.port=' + port,
-                        'org.javacs.Main'
+                        'com.github.kdvolder.lsapi.example.Main'
                     ];
                     
                     console.log(javaExecutablePath + ' ' + args.join(' '));
@@ -68,7 +67,13 @@ export function activate(context: VSCode.ExtensionContext) {
                         let options = { stdio: 'inherit', cwd: VSCode.workspace.rootPath };
                         
                         // Start the child java process
-                        ChildProcess.execFile(javaExecutablePath, args, options);
+                        let child = ChildProcess.execFile(javaExecutablePath, args, options);
+                        child.stdout.on('data', (data) => {
+                            console.log(data);
+                        });
+                        child.stderr.on('data', (data) => {
+                            console.error(data);
+                        })
                     });
                 });
             });
@@ -82,54 +87,6 @@ export function activate(context: VSCode.ExtensionContext) {
         // Push the disposable to the context's subscriptions so that the 
         // client can be deactivated on extension deactivation
         context.subscriptions.push(disposable);
-        
-        // Set indentation rules
-        VSCode.languages.setLanguageConfiguration('java', {
-            indentationRules: {
-                // ^(.*\*/)?\s*\}.*$
-                decreaseIndentPattern: /^(.*\*\/)?\s*\}.*$/,
-                // ^.*\{[^}"']*$
-                increaseIndentPattern: /^.*\{[^}"']*$/
-            },
-            wordPattern: /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
-            comments: {
-                lineComment: '//',
-                blockComment: ['/*', '*/']
-            },
-            brackets: [
-                ['{', '}'],
-                ['[', ']'],
-                ['(', ')'],
-            ],
-            onEnterRules: [
-                {
-                    // e.g. /** | */
-                    beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
-                    afterText: /^\s*\*\/$/,
-                    action: { indentAction: VSCode.IndentAction.IndentOutdent, appendText: ' * ' }
-                },
-                {
-                    // e.g. /** ...|
-                    beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
-                    action: { indentAction: VSCode.IndentAction.None, appendText: ' * ' }
-                },
-                {
-                    // e.g.  * ...|
-                    beforeText: /^(\t|(\ \ ))*\ \*(\ ([^\*]|\*(?!\/))*)?$/,
-                    action: { indentAction: VSCode.IndentAction.None, appendText: '* ' }
-                },
-                {
-                    // e.g.  */|
-                    beforeText: /^(\t|(\ \ ))*\ \*\/\s*$/,
-                    action: { indentAction: VSCode.IndentAction.None, removeText: 1 }
-                }
-            ],
-            
-            // TODO equivalent of this from typescript when replacement for __electricCharacterSupport API is released
-            // __electricCharacterSupport: {
-            //     docComment: { scope: 'comment.documentation', open: '/**', lineStart: ' * ', close: ' */' }
-            // }
-        });
     });
 }
 

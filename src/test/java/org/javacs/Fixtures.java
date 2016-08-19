@@ -1,13 +1,14 @@
 package org.javacs;
 
-import io.typefox.lsapi.InitializeParamsImpl;
-import org.junit.BeforeClass;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Set;
+
+import com.github.kdvolder.lsapi.util.LoggingFormat;
+
+import io.typefox.lsapi.InitializeParamsImpl;
 
 public class Fixtures {
     static {

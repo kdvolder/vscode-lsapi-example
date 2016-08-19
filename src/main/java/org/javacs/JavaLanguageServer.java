@@ -20,9 +20,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static org.javacs.Main.JSON;
+import static com.github.kdvolder.lsapi.util.JSON.JSON;
 
-class JavaLanguageServer implements LanguageServer {
+public class JavaLanguageServer implements LanguageServer {
     private static final Logger LOG = Logger.getLogger("main");
     private Path workspaceRoot;
     private Consumer<PublishDiagnosticsParams> publishDiagnostics = p -> {};
@@ -60,6 +60,7 @@ class JavaLanguageServer implements LanguageServer {
 
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+    	LOG.info("INITTING LS");
         workspaceRoot = Paths.get(params.getRootPath()).toAbsolutePath().normalize();
 
         InitializeResultImpl result = new InitializeResultImpl();
