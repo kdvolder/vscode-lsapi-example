@@ -43,7 +43,7 @@ export function activate(context: VSCode.ExtensionContext) {
                 ]
             }
         }
-        
+
         function createServer(): Promise<StreamInfo> {
             return new Promise((resolve, reject) => {
                 PortFinder.getPort((err, port) => {
@@ -75,7 +75,8 @@ export function activate(context: VSCode.ExtensionContext) {
         }
 
         // Create the language client and start the client.
-        let client = new LanguageClient('Language Server Example', createServer, clientOptions);
+        let client = new LanguageClient('lsapi-example', 'Language Server Example', 
+            createServer, clientOptions);
         let disposable = client.start();
 
         // Push the disposable to the context's subscriptions so that the 
