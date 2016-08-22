@@ -29,6 +29,7 @@ import io.typefox.lsapi.Hover;
 import io.typefox.lsapi.Location;
 import io.typefox.lsapi.PublishDiagnosticsParams;
 import io.typefox.lsapi.PublishDiagnosticsParamsImpl;
+import io.typefox.lsapi.Range;
 import io.typefox.lsapi.ReferenceParams;
 import io.typefox.lsapi.RenameParams;
 import io.typefox.lsapi.SignatureHelp;
@@ -60,6 +61,48 @@ public class SimpleTextDocumentService implements TextDocumentService {
 				doc.apply(change);
 				didChangeContent(doc, change);
 			}
+		}
+	}
+	
+	@Override
+	public void didOpen(DidOpenTextDocumentParams params) {
+		LOG.info("didOpen: "+params);
+		//Example message:
+		//{
+		//   "jsonrpc":"2.0",
+		//   "method":"textDocument/didOpen",
+		//   "params":{
+		//      "textDocument":{
+		//         "uri":"file:///home/kdvolder/tmp/hello-java/hello.txt",
+		//         "languageId":"plaintext",
+		//         "version":1,
+		//         "text":"This is some text ya-all o\nsss typescript\n"
+		//      }
+		//   }
+		//}
+		String url = params.getTextDocument().getUri();
+		if (url!=null) {
+			String text = params.getTextDocument().getText();
+			TextDocument doc = getOrCreateDocument(url);
+			doc.setText(text);
+			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
+				@Override
+				public Range getRange() {
+					return null;
+				}
+
+				@Override
+				public Integer getRangeLength() {
+					return null;
+				}
+
+				@Override
+				public String getText() {
+					return text;
+				}
+			};
+			TextDocumentContentChange evt = new TextDocumentContentChange(doc, change);
+			documentChangeListeners.fire(evt);
 		}
 	}
 
@@ -168,13 +211,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	@Override
-	public void didOpen(DidOpenTextDocumentParams params) {
-		// TODO Auto-generated method stub
-
-	}
-
 
 	@Override
 	public void didClose(DidCloseTextDocumentParams params) {

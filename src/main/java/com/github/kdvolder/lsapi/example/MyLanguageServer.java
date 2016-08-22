@@ -23,7 +23,6 @@ public class MyLanguageServer extends SimpleLanguageServer {
 		documents.onDidChangeContent(params -> {
 			System.out.println("Document changed: "+params);
 			TextDocument doc = params.getDocument();
-			String uri = doc.getUri();
 			List<DiagnosticImpl> diagnostics = new ArrayList<>();
 			String[] lines = doc.getText().split("\\r?\\n");
 			for (int i = 0; i < lines.length; i++) {
