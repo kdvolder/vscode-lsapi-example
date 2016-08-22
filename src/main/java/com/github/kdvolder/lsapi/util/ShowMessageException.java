@@ -1,4 +1,4 @@
-package org.javacs;
+package com.github.kdvolder.lsapi.util;
 
 import io.typefox.lsapi.MessageParams;
 import io.typefox.lsapi.MessageParamsImpl;

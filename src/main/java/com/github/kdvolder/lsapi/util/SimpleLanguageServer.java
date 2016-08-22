@@ -7,15 +7,11 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.javacs.NoJavaConfigException;
-import org.javacs.ShowMessageException;
-
 import io.typefox.lsapi.InitializeParams;
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.InitializeResultImpl;
 import io.typefox.lsapi.MessageParams;
 import io.typefox.lsapi.MessageParamsImpl;
-import io.typefox.lsapi.PublishDiagnosticsParams;
 import io.typefox.lsapi.ServerCapabilitiesImpl;
 import io.typefox.lsapi.ShowMessageRequestParams;
 import io.typefox.lsapi.services.LanguageServer;
@@ -75,12 +71,6 @@ public abstract class SimpleLanguageServer implements LanguageServer {
     public void onError(String message, Throwable error) {
         if (error instanceof ShowMessageException)
             showMessage.accept(((ShowMessageException) error).message);
-        else if (error instanceof NoJavaConfigException) {
-            // Swallow error
-            // If you want to show a message for no-java-config, 
-            // you have to specifically catch the error lower down and re-throw it
-            LOG.warning(error.getMessage());
-        }
         else {
             LOG.log(Level.SEVERE, message, error);
             
