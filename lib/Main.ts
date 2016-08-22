@@ -11,20 +11,39 @@ import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, St
 
 PortFinder.basePort = 55282;
 
+const DEBUG = true;
+const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n';
+    //If DEBUG is falsy then
+    //   we launch from the 'fat jar' (which has to be built by running mvn package)
+    //if DEBUG is truthy then
+    //   - we launch the Java project directly from the classes folder produced by Eclipse JDT compiler
+    //   - we add DEBUG_ARG to the launch so that remote debugger can attach on port 8000
+
+function getClasspath(context: VSCode.ExtensionContext):string {
+    if (!DEBUG) {
+        return Path.resolve(context.extensionPath, "out", "fat-jar.jar");
+    } else {
+        let projectDir = context.extensionPath;
+        let classpathFile = Path.resolve(projectDir, "classpath.txt");
+        //TODO: async read?
+        let classpath = FS.readFileSync(classpathFile, 'utf8');
+        classpath =  Path.resolve(projectDir, 'target/classes') + ':' + classpath;
+        return classpath;
+    }
+}
+
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext) {
     let javaExecutablePath = findJavaExecutable('java');
     
     if (javaExecutablePath == null) {
         VSCode.window.showErrorMessage("Couldn't locate java in $JAVA_HOME or $PATH");
-        
         return;
     }
         
     isJava8(javaExecutablePath).then(eight => {
         if (!eight) {
             VSCode.window.showErrorMessage('Java language support requires Java 8 (using ' + javaExecutablePath + ')');
-            
             return;
         }
                     
@@ -37,6 +56,7 @@ export function activate(context: VSCode.ExtensionContext) {
                 configurationSection: 'languageServerExample',
                 // Notify the server about file changes to 'javaconfig.json' files contain in the workspace
                 fileEvents: [
+                    //What's this for? Don't think it does anything useful for this example:
                     VSCode.workspace.createFileSystemWatcher('**/.clientrc')
                 ]
             }
@@ -45,17 +65,6 @@ export function activate(context: VSCode.ExtensionContext) {
         function createServer(): Promise<StreamInfo> {
             return new Promise((resolve, reject) => {
                 PortFinder.getPort((err, port) => {
-                    let fatJar = Path.resolve(context.extensionPath, "out", "fat-jar.jar");
-                    
-                    let args = [
-                        '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n',
-                        '-Dserver.port=' + port,
-                        '-cp', fatJar, 
-                        'com.github.kdvolder.lsapi.example.Main'
-                    ];
-                    
-                    console.log(javaExecutablePath + ' ' + args.join(' '));
-                    
                     Net.createServer(socket => {
                         console.log('Child process connected on port ' + port);
 
@@ -64,10 +73,23 @@ export function activate(context: VSCode.ExtensionContext) {
                             writer: socket
                         });
                     }).listen(port, () => {
-                        let options = { stdio: 'inherit', cwd: VSCode.workspace.rootPath };
+                        let options = { 
+                            cwd: VSCode.workspace.rootPath 
+                        };
+                        let child: ChildProcess.ChildProcess;
+                        let classpath = getClasspath(context);
+                        let args = [
+                            '-Dserver.port=' + port,
+                            '-cp', classpath, 
+                            'com.github.kdvolder.lsapi.example.Main'
+                        ];
+                        if (DEBUG) {
+                            args.unshift(DEBUG_ARG);
+                        }
+                        console.log(javaExecutablePath + ' ' + args.join(' '));
                         
                         // Start the child java process
-                        let child = ChildProcess.execFile(javaExecutablePath, args, options);
+                        child = ChildProcess.execFile(javaExecutablePath, args, options);
                         child.stdout.on('data', (data) => {
                             console.log(data);
                         });
