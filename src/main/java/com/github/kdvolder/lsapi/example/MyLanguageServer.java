@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import com.github.kdvolder.lsapi.util.Futures;
 import com.github.kdvolder.lsapi.util.SimpleLanguageServer;
 import com.github.kdvolder.lsapi.util.SimpleTextDocumentService;
 import com.github.kdvolder.lsapi.util.SimpleWorkspaceService;

@@ -1,4 +1,4 @@
-package com.github.kdvolder.lsapi.example;
+package com.github.kdvolder.lsapi.util;
 
 import java.util.concurrent.CompletableFuture;
 
