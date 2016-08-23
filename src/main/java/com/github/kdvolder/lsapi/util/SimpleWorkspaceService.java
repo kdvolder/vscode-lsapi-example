@@ -2,6 +2,7 @@ package com.github.kdvolder.lsapi.util;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import io.typefox.lsapi.DidChangeConfigurationParams;
 import io.typefox.lsapi.DidChangeWatchedFilesParams;
@@ -10,6 +11,9 @@ import io.typefox.lsapi.WorkspaceSymbolParams;
 import io.typefox.lsapi.services.WorkspaceService;
 
 public class SimpleWorkspaceService implements WorkspaceService {
+	
+	private ListenerList<DidChangeConfigurationParams> configurationListeners = new ListenerList<>();
+
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> symbol(WorkspaceSymbolParams params) {
@@ -19,8 +23,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didChangeConfiguraton(DidChangeConfigurationParams params) {
-		// TODO Auto-generated method stub
-
+		configurationListeners.fire(params);
 	}
 
 	@Override
@@ -29,4 +32,8 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	}
 
+	public void onDidChangeConfiguraton(Consumer<DidChangeConfigurationParams> l) {
+		configurationListeners.add(l);
+	}
+	
 }

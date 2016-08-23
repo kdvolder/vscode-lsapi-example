@@ -1,6 +1,7 @@
 package com.github.kdvolder.lsapi.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	
 	@Override
 	public void didOpen(DidOpenTextDocumentParams params) {
-		LOG.info("didOpen: "+params);
+		//LOG.info("didOpen: "+params);
 		//Example message:
 		//{
 		//   "jsonrpc":"2.0",
@@ -105,6 +106,15 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			documentChangeListeners.fire(evt);
 		}
 	}
+
+	@Override
+	public void didClose(DidCloseTextDocumentParams params) {
+		String url = params.getTextDocument().getUri();
+		if (url!=null) {
+			documents.remove(url);
+		}
+	}
+
 
 	void didChangeContent(TextDocument doc, TextDocumentContentChangeEvent change) {
 		documentChangeListeners.fire(new TextDocumentContentChange(doc, change));
@@ -213,12 +223,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	@Override
-	public void didClose(DidCloseTextDocumentParams params) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void didSave(DidSaveTextDocumentParams params) {
 		// TODO Auto-generated method stub
 
@@ -236,6 +240,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			params.setDiagnostics(diagnostics);
 			publishDiagnostics.accept(params);
 		}
+	}
+
+	public synchronized Collection<TextDocument> getAll() {
+		return new ArrayList<>(documents.values());
 	}
 
 }

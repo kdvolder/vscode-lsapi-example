@@ -33,6 +33,8 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 
 	private SimpleTextDocumentService tds;
 
+	private SimpleWorkspaceService workspace;
+
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
     	LOG.info("Initializing");
@@ -110,12 +112,16 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 		return new SimpleTextDocumentService();
 	}
 
-	@Override
-	public SimpleWorkspaceService getWorkspaceService() {
-		return createWorkspaceService();
-	}
-
-	protected SimpleWorkspaceService createWorkspaceService() {
+	public SimpleWorkspaceService createWorkspaceService() {
 		return new SimpleWorkspaceService();
 	}
+
+	@Override
+	public synchronized SimpleWorkspaceService getWorkspaceService() {
+		if (workspace==null) {
+			workspace = createWorkspaceService();
+		}
+		return workspace;
+	}
+
 }
