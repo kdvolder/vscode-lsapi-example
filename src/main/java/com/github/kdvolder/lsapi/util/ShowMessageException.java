@@ -4,7 +4,9 @@ import io.typefox.lsapi.MessageParams;
 import io.typefox.lsapi.MessageParamsImpl;
 
 public class ShowMessageException extends RuntimeException {
-    public final MessageParams message;
+
+	private static final long serialVersionUID = 1L;
+	public final MessageParams message;
 
     public ShowMessageException(MessageParams message, Exception cause) {
         super(message.getMessage(), cause);

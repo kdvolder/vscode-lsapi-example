@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import com.github.kdvolder.lsapi.util.LoggingFormat;
 
-import io.typefox.lsapi.services.json.LanguageServerToJsonAdapter;
 import io.typefox.lsapi.services.json.LoggingJsonAdapter;
 
 public class Main {

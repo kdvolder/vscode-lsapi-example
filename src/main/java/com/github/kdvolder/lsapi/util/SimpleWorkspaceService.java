@@ -12,8 +12,7 @@ import io.typefox.lsapi.services.WorkspaceService;
 
 public class SimpleWorkspaceService implements WorkspaceService {
 	
-	private ListenerList<DidChangeConfigurationParams> configurationListeners = new ListenerList<>();
-
+	private ListenerList<Settings> configurationListeners = new ListenerList<>();
 
 	@Override
 	public CompletableFuture<List<? extends SymbolInformation>> symbol(WorkspaceSymbolParams params) {
@@ -23,7 +22,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didChangeConfiguraton(DidChangeConfigurationParams params) {
-		configurationListeners.fire(params);
+		configurationListeners.fire(new Settings(params.getSettings()));
 	}
 
 	@Override
@@ -32,7 +31,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	}
 
-	public void onDidChangeConfiguraton(Consumer<DidChangeConfigurationParams> l) {
+	public void onDidChangeConfiguraton(Consumer<Settings> l) {
 		configurationListeners.add(l);
 	}
 	

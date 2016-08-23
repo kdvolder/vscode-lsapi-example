@@ -34,7 +34,7 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 	private SimpleTextDocumentService tds;
 
 	private SimpleWorkspaceService workspace;
-
+	
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
     	LOG.info("Initializing");
@@ -48,7 +48,6 @@ public abstract class SimpleLanguageServer implements LanguageServer {
 
         return CompletableFuture.completedFuture(result);
     }
-
 
     @Override
     public WindowService getWindowService() {

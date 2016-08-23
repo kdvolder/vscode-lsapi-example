@@ -15,7 +15,6 @@ import io.typefox.lsapi.CodeLensParams;
 import io.typefox.lsapi.Command;
 import io.typefox.lsapi.CompletionItem;
 import io.typefox.lsapi.CompletionList;
-import io.typefox.lsapi.Diagnostic;
 import io.typefox.lsapi.DiagnosticImpl;
 import io.typefox.lsapi.DidChangeTextDocumentParams;
 import io.typefox.lsapi.DidCloseTextDocumentParams;
@@ -45,11 +44,31 @@ import io.typefox.lsapi.services.TextDocumentService;
 public class SimpleTextDocumentService implements TextDocumentService {
 	
     private static final Logger LOG = Logger.getLogger(SimpleTextDocumentService.class.getName());
+    
     private Consumer<PublishDiagnosticsParams> publishDiagnostics = p -> {};
-
-	Map<String, TextDocument> documents = new HashMap<>();
-
+	private Map<String, TextDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
+	private CompletionHandler completionHandler = null;
+	private CompletionResolveHandler completionResolveHandler = null;
+	
+	public synchronized void onCompletion(CompletionHandler h) {
+		Assert.isNull("A completion handler is already set, multiple handlers not supported yet", completionHandler);
+		this.completionHandler = h;
+	}
+
+	public synchronized void onCompletionResolve(CompletionResolveHandler h) {
+		Assert.isNull("A completionResolveHandler handler is already set, multiple handlers not supported yet", completionResolveHandler);
+		this.completionResolveHandler = h;
+	}
+
+	/**
+	 * Gets all documents this service is tracking, generally these are the documents that have been opened / changed,
+	 * and not yet closed.
+	 */
+	public synchronized Collection<TextDocument> getAll() {
+		return new ArrayList<>(documents.values());
+	}
+
 
 	@Override
 	public final void didChange(DidChangeTextDocumentParams params) {
@@ -134,13 +153,19 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<CompletionList> completion(TextDocumentPositionParams position) {
-		// TODO Auto-generated method stub
-		return null;
+		CompletionHandler h = completionHandler;
+		if (h!=null) {
+			return completionHandler.handle(position);
+		}
+		return null; //TODO: does caller handle nulls? Or do we need to provide something that create a empty completion list?
 	}
 
 	@Override
 	public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved) {
-		// TODO Auto-generated method stub
+		CompletionResolveHandler h = completionResolveHandler;
+		if (h!=null) {
+			return h.handle(unresolved);
+		}
 		return null;
 	}
 
@@ -240,10 +265,6 @@ public class SimpleTextDocumentService implements TextDocumentService {
 			params.setDiagnostics(diagnostics);
 			publishDiagnostics.accept(params);
 		}
-	}
-
-	public synchronized Collection<TextDocument> getAll() {
-		return new ArrayList<>(documents.values());
 	}
 
 }
