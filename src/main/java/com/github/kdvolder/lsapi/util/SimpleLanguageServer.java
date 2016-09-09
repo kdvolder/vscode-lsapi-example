@@ -38,8 +38,13 @@ public abstract class SimpleLanguageServer implements LanguageServer {
     @Override
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
     	LOG.info("Initializing");
-        this.workspaceRoot= Paths.get(params.getRootPath()).toAbsolutePath().normalize();
-        LOG.info("workspaceRoot = "+workspaceRoot);
+    	String rootPath = params.getRootPath();
+    	if (rootPath==null) {
+	        LOG.warning("workspaceRoot NOT SET");
+    	} else {
+	        this.workspaceRoot= Paths.get(rootPath).toAbsolutePath().normalize();
+	        LOG.info("workspaceRoot = "+workspaceRoot);
+    	}
 
         InitializeResultImpl result = new InitializeResultImpl();
 
