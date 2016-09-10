@@ -1,7 +1,7 @@
 package com.github.kdvolder.lsapi.example;
 
-import static com.github.kdvolder.lsapi.testharness.LanguageServerHarness.diagnosticCovering;
-import static com.github.kdvolder.lsapi.testharness.LanguageServerHarness.isWarning;
+import static com.github.kdvolder.lsapi.testharness.LanguageServerHarness.isDiagnosticCovering;
+import static com.github.kdvolder.lsapi.testharness.LanguageServerHarness.*;
 import static org.assertj.core.api.Assertions.allOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,21 +39,32 @@ public class MyLanguageServerTest {
 	}
 	
 	
-	@Test public void linterMarksBadWords() throws Exception {
+	@Test public void linterMarksBadWordsOnDocumentOpenAndChange() throws Exception {
 		LanguageServerHarness harness = new LanguageServerHarness(MyLanguageServer::new);
 		
 		File workspaceRoot = getTestResource("/workspace/");
 		assertExpectedInitResult(harness.intialize(workspaceRoot));
 
 		TextDocumentInfo doc = harness.openDocument(getTestResource("/workspace/test-file.txt"));
-		
-		PublishDiagnosticsParams diagnostics = harness.getDiagnostics(doc);
-		assertThat(diagnostics.getUri()).isEqualTo(doc.getUri());
-		assertThat(diagnostics.getDiagnostics()).areExactly(2, allOf(
-				isWarning,
-				diagnosticCovering(doc, "typescript")
-				
-		));
+		{
+			PublishDiagnosticsParams diagnostics = harness.getDiagnostics(doc);
+			assertThat(diagnostics.getUri()).isEqualTo(doc.getUri());
+			assertThat(diagnostics.getDiagnostics()).areExactly(2, allOf(
+					isWarning,
+					isDiagnosticCovering(doc, "typescript")
+					
+			));
+		}
+		doc = harness.changeDocument(doc.getUri(), "This typescript is good fun");
+		{
+			PublishDiagnosticsParams diagnostics = harness.getDiagnostics(doc);
+			assertThat(diagnostics.getUri()).isEqualTo(doc.getUri());
+			assertThat(diagnostics.getDiagnostics()).areExactly(1, allOf(
+					isWarning,
+					isDiagnosticCovering(doc, "typescript"),
+					isDiagnosticOnLine(0)
+			));
+		}
 	}
 	
 	private void assertExpectedInitResult(InitializeResult initResult) {

@@ -71,7 +71,7 @@ public class LanguageServerHarness {
 		n.setLanguageId(o.getLanguageId());
 		n.setText(newContent);
 		n.setVersion(o.getVersion()+1);
-		n.setUri(n.getUri());
+		n.setUri(o.getUri());
 		documents.put(uri, new TextDocumentInfo(n));
 		return n;
 	}
@@ -112,7 +112,7 @@ public class LanguageServerHarness {
 		return documentInfo;
 	}
 
-	public void changeDocument(String uri, String newContent) throws Exception {
+	public TextDocumentInfo changeDocument(String uri, String newContent) throws Exception {
 		TextDocumentItemImpl textDocument = setDocumentContent(uri, newContent);
 		DidChangeTextDocumentParamsImpl didChange = new DidChangeTextDocumentParamsImpl();
 		VersionedTextDocumentIdentifierImpl version = new VersionedTextDocumentIdentifierImpl();
@@ -133,6 +133,7 @@ public class LanguageServerHarness {
 			throw new IllegalStateException("Unkown SYNC mode: "+getDocumentSyncMode());
 		}
 		server.getTextDocumentService().didChange(didChange);
+		return documents.get(uri);
 	}
 
 	private int getDocumentSyncMode() {
@@ -144,26 +145,33 @@ public class LanguageServerHarness {
 		return diagnostics.get(doc.getUri());
 	}
 	
-	public static Condition<Diagnostic> diagnosticWithSeverity(int severity) {
+	public static Condition<Diagnostic> isDiagnosticWithSeverity(int severity) {
 		return new Condition<>(
 				(d) -> d.getSeverity()==severity,
 				"Diagnostic with severity '"+severity+"'"
 		); 
 	}
 
-	public static Condition<Diagnostic> diagnosticCovering(TextDocumentInfo doc, String string) {
+	public static Condition<Diagnostic> isDiagnosticCovering(TextDocumentInfo doc, String string) {
 		return new Condition<>(
 				(d) -> isDiagnosticCovering(d, doc, string),
 				"Diagnostic covering '"+string+"'"
 		); 
 	}
 
-	public static final Condition<Diagnostic> isWarning = diagnosticWithSeverity(Diagnostic.SEVERITY_WARNING);
+	public static final Condition<Diagnostic> isWarning = isDiagnosticWithSeverity(Diagnostic.SEVERITY_WARNING);
 
 	public static boolean isDiagnosticCovering(Diagnostic diag, TextDocumentInfo doc, String string) {
 		Range rng = diag.getRange();
 		String actualText = doc.getText(rng);
 		return string.equals(actualText);
+	}
+
+	public static Condition<Diagnostic> isDiagnosticOnLine(int line) {
+		return new Condition<>(
+				(d) -> d.getRange().getStart().getLine()==line,
+				"Diagnostic on line "+line
+		); 
 	}
 
 }
