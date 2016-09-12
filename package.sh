@@ -7,6 +7,7 @@
 set -e # fail at the first sign of trouble
 
 mvn clean package ## build language server fat jar
+npm install
 vsce package
 
 
