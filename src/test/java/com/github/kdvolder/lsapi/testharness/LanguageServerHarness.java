@@ -5,23 +5,32 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
 
 import io.typefox.lsapi.ClientCapabilitiesImpl;
+import io.typefox.lsapi.CompletionItem;
+import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.Diagnostic;
 import io.typefox.lsapi.DidChangeTextDocumentParamsImpl;
 import io.typefox.lsapi.DidOpenTextDocumentParamsImpl;
 import io.typefox.lsapi.InitializeParamsImpl;
 import io.typefox.lsapi.InitializeResult;
+import io.typefox.lsapi.Position;
+import io.typefox.lsapi.PositionImpl;
 import io.typefox.lsapi.PublishDiagnosticsParams;
 import io.typefox.lsapi.Range;
 import io.typefox.lsapi.ServerCapabilities;
 import io.typefox.lsapi.TextDocumentContentChangeEventImpl;
 import io.typefox.lsapi.TextDocumentItemImpl;
+import io.typefox.lsapi.TextDocumentPositionParamsImpl;
 import io.typefox.lsapi.VersionedTextDocumentIdentifierImpl;
 import io.typefox.lsapi.services.LanguageServer;
 
@@ -172,6 +181,38 @@ public class LanguageServerHarness {
 				(d) -> d.getRange().getStart().getLine()==line,
 				"Diagnostic on line "+line
 		); 
+	}
+
+	public CompletionList getCompletions(TextDocumentInfo doc, Position cursor) throws Exception {
+		TextDocumentPositionParamsImpl params = new TextDocumentPositionParamsImpl();
+		params.setPosition(toImpl(cursor));
+		params.setTextDocument(doc.getId());
+		return server.getTextDocumentService().completion(params).get();
+	}
+
+	private PositionImpl toImpl(Position pos) {
+		if (pos instanceof PositionImpl) {
+			return (PositionImpl) pos;
+		} else {
+			PositionImpl imp = new PositionImpl();
+			imp.setCharacter(pos.getCharacter());
+			imp.setLine(pos.getLine());
+			return imp;
+		}
+	}
+
+	private CompletionItem resolveCompletionItem(CompletionItem unresolved) {
+		try {
+			return server.getTextDocumentService().resolveCompletionItem(unresolved).get();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public List<CompletionItem> resolveCompletions(CompletionList completions) {
+		return completions.getItems().stream()
+		.map(this::resolveCompletionItem)
+		.collect(Collectors.toList());
 	}
 
 }

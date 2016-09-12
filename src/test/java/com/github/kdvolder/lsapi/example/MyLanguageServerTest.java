@@ -8,12 +8,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.Test;
 
 import com.github.kdvolder.lsapi.testharness.LanguageServerHarness;
 import com.github.kdvolder.lsapi.testharness.TextDocumentInfo;
 
+import io.typefox.lsapi.CompletionItem;
+import io.typefox.lsapi.CompletionList;
 import io.typefox.lsapi.InitializeResult;
 import io.typefox.lsapi.PublishDiagnosticsParams;
 import io.typefox.lsapi.ServerCapabilities;
@@ -65,6 +68,34 @@ public class MyLanguageServerTest {
 					isDiagnosticOnLine(0)
 			));
 		}
+	}
+	
+	@Test public void completions() throws Exception {
+		LanguageServerHarness harness = new LanguageServerHarness(MyLanguageServer::new);
+		
+		File workspaceRoot = getTestResource("/workspace/");
+		assertExpectedInitResult(harness.intialize(workspaceRoot));
+
+		TextDocumentInfo doc = harness.openDocument(getTestResource("/workspace/test-file.txt"));
+		
+		CompletionList completions = harness.getCompletions(doc, doc.positionOf("text"));
+		assertThat(completions.isIncomplete()).isFalse();
+		assertThat(completions.getItems())
+			.extracting(CompletionItem::getLabel)
+			.containsExactly("TypeScript", "JavaScript");
+		
+		List<CompletionItem> resolved = harness.resolveCompletions(completions);
+		assertThat(resolved)
+			.extracting(CompletionItem::getLabel)
+			.containsExactly("TypeScript", "JavaScript");
+		
+		assertThat(resolved)
+			.extracting(CompletionItem::getDetail)
+			.containsExactly("TypeScript details", "JavaScript details");
+		
+		assertThat(resolved)
+			.extracting(CompletionItem::getDocumentation)
+			.containsExactly("TypeScript docs", "JavaScript docs");
 	}
 	
 	private void assertExpectedInitResult(InitializeResult initResult) {

@@ -6,7 +6,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.typefox.lsapi.Position;
+import io.typefox.lsapi.PositionImpl;
 import io.typefox.lsapi.Range;
+import io.typefox.lsapi.TextDocumentIdentifierImpl;
 import io.typefox.lsapi.TextDocumentItemImpl;
 
 public class TextDocumentInfo {
@@ -15,7 +17,7 @@ public class TextDocumentInfo {
 	
 	private final TextDocumentItemImpl document;
 	
-	private int[] lineStarts;
+	private int[] _lineStarts;
 
 	public TextDocumentInfo(TextDocumentItemImpl document) {
 		this.document = document;
@@ -48,15 +50,19 @@ public class TextDocumentInfo {
 	}
 
 	private int toOffset(Position p) {
-		int startOfLine = getStartOfLineNumber(p.getLine());
+		int startOfLine = startOfLine(p.getLine());
 		return startOfLine+p.getCharacter();
 	}
 
-	private int getStartOfLineNumber(int line) {
-		if (lineStarts==null) {
-			lineStarts = parseLines();
+	private int startOfLine(int line) {
+		return lineStarts()[line];
+	}
+
+	private int[] lineStarts() {
+		if (_lineStarts==null) {
+			_lineStarts = parseLines();
 		}
-		return lineStarts[line];
+		return _lineStarts;
 	}
 
 	private int[] parseLines() {
@@ -74,4 +80,51 @@ public class TextDocumentInfo {
 		return array;
 	}
 
+	/**
+	 * Find and return the (first) position of a given text snippet in the
+	 * document.
+	 * 
+	 * @return The position, or null if the snippet can't be found.
+	 */
+	public Position positionOf(String snippet) {
+		int offset = getText().indexOf(snippet);
+		if (offset>=0) {
+			return toPosition(offset);
+		}
+		return null;
+	}
+
+	private Position toPosition(int offset) {
+		int line = lineNumber(offset);
+		int startOfLine = startOfLine(line);
+		int column = offset - startOfLine;
+		PositionImpl pos = new PositionImpl();
+		pos.setCharacter(column);
+		pos.setLine(line);
+		return pos;
+	}
+
+	/**
+	 * Determine the line-number a given offset (i.e. what line is the offset inside of?)
+	 */
+	private int lineNumber(int offset) {
+		int[] lineStarts = lineStarts();
+		// TODO Could use binary search which is faster
+		int lineNumber = 0;
+		for (int i = 0; i < lineStarts.length; i++) {
+			if (lineStarts[i]<=offset) {
+				lineNumber = i;
+			} else {
+				return lineNumber;
+			}
+		}
+		return lineNumber;
+	}
+
+	public TextDocumentIdentifierImpl getId() {
+		TextDocumentIdentifierImpl id = new TextDocumentIdentifierImpl();
+		id.setUri(getUri());
+		return id;
+	}
+	
 }
