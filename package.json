@@ -1,13 +1,13 @@
 {
   "name": "vscode-lsapi-example",
   "displayName": "VSCode lsapi example Language Support",
-  "description": "Java support using the javac API",
+  "description": "Toy language server, implemented in Java",
   "icon": "icon.png",
-  "version": "0.0.19",
-  "publisher": "georgewfraser",
+  "version": "0.0.1",
+  "publisher": "kdvolder",
   "repository": {
     "type": "git",
-    "url": "https://github.com/georgewfraser/vscode-javac.git"
+    "url": "https://github.com/kdvolder/vscode-lsapi-example.git"
   },
   "license": "MIT",
   "engines": {
@@ -18,7 +18,7 @@
     "Linters"
   ],
   "keywords": [
-    "java"
+    "toy"
   ],
   "activationEvents": [
     "onLanguage:plaintext"
@@ -49,8 +49,7 @@
   },
   "dependencies": {
     "portfinder": "^0.4.0",
-    "vscode-languageclient": "^2.2.1",
-    "when": "^2.4.0"
+    "vscode-languageclient": "^2.2.1"
   },
   "devDependencies": {
     "typescript": "^1.8.5",
