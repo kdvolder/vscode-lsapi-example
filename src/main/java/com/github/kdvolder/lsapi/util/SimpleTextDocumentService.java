@@ -45,7 +45,8 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	
     private static final Logger LOG = Logger.getLogger(SimpleTextDocumentService.class.getName());
     
-    private Consumer<PublishDiagnosticsParams> publishDiagnostics = p -> {};
+    private Consumer<PublishDiagnosticsParams> publishDiagnostics = (p) -> {};
+    
 	private Map<String, TextDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
 	private CompletionHandler completionHandler = null;
@@ -265,8 +266,8 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	}
 
 	@Override
-	public void onPublishDiagnostics(Consumer<PublishDiagnosticsParams> callback) {
-		publishDiagnostics = callback;
+	public synchronized void onPublishDiagnostics(Consumer<PublishDiagnosticsParams> callback) {
+		publishDiagnostics = publishDiagnostics.andThen(callback);
 	}
 
 	public void publishDiagnostics(TextDocument doc, List<DiagnosticImpl> diagnostics) {

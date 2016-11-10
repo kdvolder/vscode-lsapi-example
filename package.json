@@ -1,59 +1,59 @@
 {
-    "name": "vscode-lsapi-example",
-    "displayName": "VSCode lsapi example Language Support",
-    "description": "Java support using the javac API",
-    "icon": "icon.png",
-    "version": "0.0.19",
-    "publisher": "georgewfraser",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/georgewfraser/vscode-javac.git"
-    },
-    "license": "MIT",
-    "engines": {
-        "vscode": "^0.10.10"
-    },
-    "categories": [
-        "Languages",
-        "Linters"
-    ],
-    "keywords": [
-        "java"
-    ],
-    "activationEvents": [
-        "onLanguage:plaintext"
-    ],
-    "main": "./out/lib/Main",
-    "files": [
-        "target/fat-jar.jar"
-    ],
-    "contributes": {
-		"configuration": {
-			"type": "object",
-			"title": "Example configuration",
-			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
-				}
-			}
-		}
-    },
-    "preview": "true",
-    "scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "mocha out/test"
-    },
-    "dependencies": {
-        "portfinder": "^0.4.0",
-        "vscode-languageclient": "^2.2.1"
-    },
-    "devDependencies": {
-        "typescript": "^1.8.5",
-        "vscode": "^0.11.0",
-        "mocha": "^2.4.5"
+  "name": "vscode-lsapi-example",
+  "displayName": "VSCode lsapi example Language Support",
+  "description": "Toy language server, implemented in Java",
+  "icon": "icon.png",
+  "version": "0.0.1",
+  "publisher": "kdvolder",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kdvolder/vscode-lsapi-example.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^0.10.10"
+  },
+  "categories": [
+    "Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "toy"
+  ],
+  "activationEvents": [
+    "onLanguage:plaintext"
+  ],
+  "main": "./out/lib/Main",
+  "files": [
+    "target/fat-jar.jar"
+  ],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Example configuration",
+      "properties": {
+        "languageServerExample.maxNumberOfProblems": {
+          "type": "number",
+          "default": 100,
+          "description": "Controls the maximum number of problems produced by the server."
+        }
+      }
     }
+  },
+  "preview": "true",
+  "scripts": {
+    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "mocha out/test"
+  },
+  "dependencies": {
+    "portfinder": "^0.4.0",
+    "vscode-languageclient": "^2.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^1.8.5",
+    "vscode": "^0.11.0",
+    "mocha": "^2.4.5"
+  }
 }

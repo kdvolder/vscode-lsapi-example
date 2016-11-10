@@ -1,6 +1,7 @@
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+
 import * as VSCode from 'vscode';
 import * as Path from 'path';
 import * as FS from 'fs';
@@ -11,7 +12,7 @@ import {LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, St
 
 PortFinder.basePort = 55282;
 
-const DEBUG = true;
+const DEBUG = false;
 const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n';
     //If DEBUG is falsy then
     //   we launch from the 'fat jar' (which has to be built by running mvn package)

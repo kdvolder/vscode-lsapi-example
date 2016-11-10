@@ -1,0 +1,6 @@
+Some text with 
+the word typescript in it.
+
+Yes, typescript!
+
+Fun!
