@@ -50,6 +50,12 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
 	private CompletionHandler completionHandler = null;
 	private CompletionResolveHandler completionResolveHandler = null;
+	private HoverHandler hoverHandler = null;
+	
+	public synchronized void onHover(HoverHandler h) {
+		Assert.isNull("A hover handler is already set, multiple handlers not supported yet", hoverHandler);
+		this.hoverHandler = h;
+	}
 	
 	public synchronized void onCompletion(CompletionHandler h) {
 		Assert.isNull("A completion handler is already set, multiple handlers not supported yet", completionHandler);
@@ -68,7 +74,10 @@ public class SimpleTextDocumentService implements TextDocumentService {
 	public synchronized Collection<TextDocument> getAll() {
 		return new ArrayList<>(documents.values());
 	}
-
+	
+	public synchronized TextDocument getDocument(String uri) {
+		return documents.get(uri);
+	}
 
 	@Override
 	public final void didChange(DidChangeTextDocumentParams params) {
@@ -171,7 +180,9 @@ public class SimpleTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
-		// TODO Auto-generated method stub
+		if (hoverHandler != null) {
+			return hoverHandler.handle(position);
+		}
 		return null;
 	}
 

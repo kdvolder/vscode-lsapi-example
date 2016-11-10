@@ -1,6 +1,7 @@
 package com.github.kdvolder.lsapi.example;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -17,6 +18,9 @@ import io.typefox.lsapi.CompletionListImpl;
 import io.typefox.lsapi.CompletionOptionsImpl;
 import io.typefox.lsapi.Diagnostic;
 import io.typefox.lsapi.DiagnosticImpl;
+import io.typefox.lsapi.Hover;
+import io.typefox.lsapi.HoverImpl;
+import io.typefox.lsapi.MarkedStringImpl;
 import io.typefox.lsapi.PositionImpl;
 import io.typefox.lsapi.RangeImpl;
 import io.typefox.lsapi.ServerCapabilities;
@@ -46,6 +50,39 @@ public class MyLanguageServer extends SimpleLanguageServer {
 					validateDocument(documents, doc);
 				}
 			}
+		});
+		
+		documents.onHover(params -> {
+			CompletableFuture<Hover> promise = new CompletableFuture<>();
+			HoverImpl hover = new HoverImpl();
+			TextDocument document = documents.getDocument(params.getTextDocument().getUri());
+			if (document != null && Character.isJavaIdentifierPart(document.getCharAt(params.getPosition()))) {
+				String line = document.getLine(params.getPosition().getLine());
+				RangeImpl range = new RangeImpl();
+				PositionImpl start = new PositionImpl();
+				start.setLine(params.getPosition().getLine());
+				start.setCharacter(params.getPosition().getCharacter());
+				while (start.getCharacter() > 0 && Character.isJavaIdentifierPart(line.charAt(start.getCharacter() - 1))) {
+					start.setCharacter(start.getCharacter() - 1);
+				}
+				PositionImpl end = new PositionImpl();
+				end.setLine(params.getPosition().getLine());
+				end.setCharacter(params.getPosition().getCharacter());
+				while (end.getCharacter() < line.length() && Character.isJavaIdentifierPart(line.charAt(end.getCharacter()))) {
+					end.setCharacter(end.getCharacter() + 1);
+				}
+				range.setStart(start);
+				range.setEnd(end);
+				hover.setRange(range);
+				
+				MarkedStringImpl contents = new MarkedStringImpl();
+//				contents.setLanguage("HTML");
+				contents.setValue("<html><div>Hohohoho! What a <b>" + line.substring(start.getCharacter(), end.getCharacter()) + "</b>???</div></html>");
+				
+				hover.setContents(Collections.singletonList(contents));
+			}
+			promise.complete(hover);
+			return promise;
 		});
 		
 		documents.onCompletion(params -> {
@@ -141,6 +178,8 @@ public class MyLanguageServer extends SimpleLanguageServer {
 		CompletionOptionsImpl completionProvider = new CompletionOptionsImpl();
 		completionProvider.setResolveProvider(true);
 		c.setCompletionProvider(completionProvider);
+		
+		c.setHoverProvider(true);
 		
 		return c;
 	}

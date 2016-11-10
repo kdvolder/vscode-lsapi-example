@@ -1,5 +1,6 @@
 package com.github.kdvolder.lsapi.util;
 
+import io.typefox.lsapi.Position;
 import io.typefox.lsapi.Range;
 import io.typefox.lsapi.TextDocumentContentChangeEvent;
 
@@ -33,6 +34,13 @@ public class TextDocument {
 			throw new IllegalStateException("Incremental sync not yet implemented");
 		}
 	}
+	
+	public String getLine(int line) {
+		return text.split(System.getProperty("line.separator"))[line];
+	}
 
+	public char getCharAt(Position p) {
+		return getLine(p.getLine()).charAt(p.getCharacter());
+	}
 
 }
